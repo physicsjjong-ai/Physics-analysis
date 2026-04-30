@@ -1,0 +1,93 @@
+<!-- Copyright (c) Microsoft Corporation. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Photos Top Nav Sprites</title>
+  <style>
+    body { font-family: sans-serif; background: #1e1e1e; color: #ccc; padding: 24px; }
+    h1 { font-size: 16px; margin-bottom: 24px; }
+    .grid { display: flex; flex-wrap: wrap; gap: 32px; }
+    .icon-group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .icon-row { display: flex; gap: 12px; align-items: center; }
+    svg.icon { width: 24px; height: 24px; fill: #ffffff; }
+    svg.icon.colored { fill: none; }
+    label { font-size: var(--font-size-caption-2); color: #888; text-align: center; }
+    .variant-label { font-size: 10px; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Photos Top Nav Icons</h1>
+
+  <!-- Inline the sprite sheet -->
+  <div style="display:none">
+    <!-- Sprite sheet will be loaded here -->
+  </div>
+
+  <div class="grid" id="icons"></div>
+
+  <script>
+    const icons = [
+      'Sparkle24', 'Glance24', 'Album24', 'People24', 'Star24', 'Folder24', 'Search24'
+    ];
+
+    // Load the sprite SVG inline
+    fetch('topNav.sprite.svg')
+      .then(r => r.text())
+      .then(svg => {
+        const container = document.querySelector('div[style="display:none"]');
+        container.innerHTML = svg;
+
+        const grid = document.getElementById('icons');
+        for (const name of icons) {
+          const group = document.createElement('div');
+          group.className = 'icon-group';
+
+          const row = document.createElement('div');
+          row.className = 'icon-row';
+
+          const variants = [`${name}Regular`, `${name}Filled`, `${name}Colored`];
+          for (const variant of variants) {
+            const sym = document.getElementById(variant);
+            if (!sym) continue;
+
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'flex';
+            wrapper.style.flexDirection = 'column';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.gap = '4px';
+
+            const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svgEl.setAttribute('class', variant.includes('Colored') ? 'icon colored' : 'icon');
+            svgEl.setAttribute('viewBox', '0 0 24 24');
+
+            // Add gradient defs if colored
+            if (variant.includes('Colored')) {
+              const defs = sym.querySelector('defs');
+              if (defs) svgEl.appendChild(defs.cloneNode(true));
+            }
+
+            const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+            use.setAttribute('href', `#${variant}`);
+            svgEl.appendChild(use);
+
+            const lbl = document.createElement('span');
+            lbl.className = 'variant-label';
+            lbl.textContent = variant.replace(name, '');
+
+            wrapper.appendChild(svgEl);
+            wrapper.appendChild(lbl);
+            row.appendChild(wrapper);
+          }
+
+          const nameLabel = document.createElement('label');
+          nameLabel.textContent = name.replace('24', '');
+
+          group.appendChild(row);
+          group.appendChild(nameLabel);
+          grid.appendChild(group);
+        }
+      });
+  </script>
+</body>
+</html>
