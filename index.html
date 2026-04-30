@@ -131,14 +131,25 @@
 
     function setMode(m) { mode = m; status.innerText = m === 'axis' ? "좌표축: 원점부터 운동방향으로 드래그" : "가늠자: 실제 길이를 아는 구간 드래그"; }
 
-    mainCanvas.onmousedown = (e) => {
+    // 마우스 이벤트 핸들러
+    mainCanvas.onmousedown = (e) => handleStart(e);
+    mainCanvas.onmousemove = (e) => handleMove(e);
+    mainCanvas.onmouseup = (e) => handleEnd(e);
+
+    // [수정된 부분] 터치 이벤트 핸들러 추가
+    mainCanvas.ontouchstart = (e) => { e.preventDefault(); handleStart(e.touches[0]); };
+    mainCanvas.ontouchmove = (e) => { e.preventDefault(); handleMove(e.touches[0]); };
+    mainCanvas.ontouchend = (e) => { e.preventDefault(); handleEnd(e.changedTouches[0]); };
+
+    // 공통 처리 로직
+    function handleStart(e) {
         if (!video.src || isSeeking) return;
         const p = getMousePos(e);
         if (mode === 'analysis') recordPoint(p);
         else { isDrawing = true; startPoint = p; }
-    };
+    }
 
-    mainCanvas.onmousemove = (e) => {
+    function handleMove(e) {
         if (!isDrawing) return;
         render();
         const cur = getMousePos(e);
@@ -146,9 +157,9 @@
         ctx.strokeStyle = mode === 'axis' ? "#8b5cf6" : "#f59e0b";
         ctx.beginPath(); ctx.moveTo(startPoint.x, startPoint.y); ctx.lineTo(cur.x, cur.y); ctx.stroke();
         ctx.setLineDash([]);
-    };
+    }
 
-    mainCanvas.onmouseup = (e) => {
+    function handleEnd(e) {
         if (!isDrawing) return;
         const p = getMousePos(e); isDrawing = false;
         const dist = Math.hypot(p.x - startPoint.x, p.y - startPoint.y);
@@ -168,7 +179,7 @@
             }
         }
         render();
-    };
+    }
 
     function recordPoint(p) {
         if (!axisLine || isSeeking) return;
@@ -231,34 +242,21 @@
         drawGraph("atGraph", points.map(p => ({x: p.time, y: p.a})), "#ef4444", "Accel(m/s²)");
     }
 
-  // [파일명 형식이 적용된 저장 함수]
     function saveAsImage() {
         if (points.length === 0) { alert("분석된 데이터가 없습니다."); return; }
-        
-        // 안내창 띄우기
         const userInput = prompt("학번-이름을 입력하세요.", "20101-홍길동");
-        
-        // 취소를 누르면 저장 프로세스 중단
         if (userInput === null) return; 
-        
-        // 입력값이 없을 경우 대비
         const nameTag = userInput.trim() === "" ? "미입력" : userInput.trim();
-        
-        // 선생님이 요청하신 파일명 형식: 등가속도 직선 운동 분석 그래프(학번-이름)
         const finalFileName = `등가속도 직선 운동 분석 그래프(${nameTag})`;
-
         const target = document.getElementById('captureArea');
         const originalBg = target.style.backgroundColor;
         target.style.backgroundColor = "white"; 
-        
         status.innerText = "이미지 생성 및 저장 중...";
-        
         html2canvas(target, { scale: 2 }).then(canvas => {
             const link = document.createElement('a');
             link.download = `${finalFileName}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-            
             target.style.backgroundColor = originalBg;
             status.innerText = "저장 완료! (파일명: " + finalFileName + ")";
         });
