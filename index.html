@@ -62,7 +62,7 @@
         <label for="upload" class="file-label">영상 선택</label>
         <input type="file" id="upload" accept="video/*" style="display:none">
         <button class="btn-axis" id="axisBtn" onclick="setMode('axis')" disabled>좌표축 설정</button>
-        <button class="btn-scale" id="scaleBtn" onclick="setMode('scale')" disabled>가늠자 설정</button>
+        <button class="btn-scale" id="scaleBtn" onclick="setMode('scale')" disabled>기준 길이 설정</button>
         <button class="btn-undo" onclick="undo()">되돌리기</button>
         <button class="btn-reset" onclick="location.reload()">초기화</button>
     </div>
@@ -129,7 +129,7 @@
         };
     };
 
-    function setMode(m) { mode = m; status.innerText = m === 'axis' ? "좌표축: 원점부터 운동방향으로 드래그" : "가늠자: 실제 길이를 아는 구간 드래그"; }
+    function setMode(m) { mode = m; status.innerText = m === 'axis' ? "좌표축: 원점부터 운동방향으로 드래그" : "기준 길이: 실제 길이를 아는 구간 드래그"; }
 
     // 마우스 이벤트 핸들러
     mainCanvas.onmousedown = (e) => handleStart(e);
@@ -167,7 +167,7 @@
 
         if (mode === 'axis') {
             axisLine = { x1: startPoint.x, y1: startPoint.y, x2: p.x, y2: p.y };
-            status.innerText = "좌표축 완료. 가늠자를 드래그해서 설정하세요.";
+            status.innerText = "좌표축 완료. 기준 길이를 드래그해서 설정하세요.";
         } else if (mode === 'scale') {
             const r = prompt("이 구간의 실제 길이(m)?", "0.5");
             if (r && !isNaN(r)) {
